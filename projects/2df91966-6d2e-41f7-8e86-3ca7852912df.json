@@ -1,0 +1,10 @@
+{
+  "uid": "Ihap9veNwKcrtcC5IJGyZWAtmE72",
+  "pages": {
+    "src/app/page.tsx": "\n\"use client\";\n\nimport WebsiteRenderer from \"@/components/renderer/WebsiteRenderer\";\n\nexport default function HomePage() {\n  const schema = {\n  \"theme\": \"dark\",\n  \"layout\": {\n    \"navbar\": true,\n    \"footer\": true\n  },\n  \"sections\": [\n    {\n      \"type\": \"hero\",\n      \"variant\": \"v1\",\n      \"props\": {\n        \"title\": \"Discover New Horizons\",\n        \"subtitle\": \"Unforgettable travel experiences with TravelPro\",\n        \"buttonText\": \"Get Started\",\n        \"image\": \"https://picsum.photos/seed/f8efae1d3153d76566e2/1600/900\"\n      }\n    }\n  ]\n};\n  return <WebsiteRenderer schema={schema} />;\n}\n"
+  },
+  "assets": {
+    "schema": "{\"theme\":\"dark\",\"layout\":{\"navbar\":true,\"footer\":true},\"sections\":[{\"type\":\"hero\",\"variant\":\"v1\",\"props\":{\"title\":\"Discover New Horizons\",\"subtitle\":\"Unforgettable travel experiences with TravelPro\",\"buttonText\":\"Get Started\",\"image\":\"https://picsum.photos/seed/f8efae1d3153d76566e2/1600/900\"}}]}"
+  },
+  "timestamp": "2026-04-05T22:35:00.208Z"
+}

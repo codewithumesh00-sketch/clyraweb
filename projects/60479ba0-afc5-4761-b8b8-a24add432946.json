@@ -1,0 +1,10 @@
+{
+  "uid": "Ihap9veNwKcrtcC5IJGyZWAtmE72",
+  "pages": {
+    "src/app/page.tsx": "\n\"use client\";\n\nimport WebsiteRenderer from \"@/components/renderer/WebsiteRenderer\";\n\nexport default function HomePage() {\n  const schema = {\n  \"theme\": \"dark\",\n  \"layout\": {\n    \"navbar\": true,\n    \"footer\": true\n  },\n  \"sections\": [\n    {\n      \"type\": \"hero\",\n      \"variant\": \"v1\",\n      \"props\": {\n        \"title\": \"Step into Style with Our Latest Shoe Collection\",\n        \"subtitle\": \"Experience the perfect blend of comfort and fashion with our wide range of shoes\",\n        \"buttonText\": \"Get Started\",\n        \"image\": \"https://picsum.photos/seed/4f046689ac7931b23d7c/1600/900\"\n      }\n    }\n  ]\n};\n  return <WebsiteRenderer schema={schema} />;\n}\n"
+  },
+  "assets": {
+    "schema": "{\"theme\":\"dark\",\"layout\":{\"navbar\":true,\"footer\":true},\"sections\":[{\"type\":\"hero\",\"variant\":\"v1\",\"props\":{\"title\":\"Step into Style with Our Latest Shoe Collection\",\"subtitle\":\"Experience the perfect blend of comfort and fashion with our wide range of shoes\",\"buttonText\":\"Get Started\",\"image\":\"https://picsum.photos/seed/4f046689ac7931b23d7c/1600/900\"}}]}"
+  },
+  "timestamp": "2026-04-05T22:49:22.127Z"
+}

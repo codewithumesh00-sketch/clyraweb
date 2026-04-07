@@ -1,0 +1,10 @@
+{
+  "uid": "Ihap9veNwKcrtcC5IJGyZWAtmE72",
+  "pages": {
+    "src/app/page.tsx": "\n\"use client\";\n\nimport WebsiteRenderer from \"@/components/renderer/WebsiteRenderer\";\n\nexport default function HomePage() {\n  const schema = {\n  \"theme\": \"light\",\n  \"layout\": {\n    \"navbar\": true,\n    \"footer\": true\n  },\n  \"sections\": [\n    {\n      \"type\": \"hero\",\n      \"variant\": \"v1\",\n      \"props\": {\n        \"title\": \"Transform Your Business\",\n        \"subtitle\": \"We provide innovative solutions to help you succeed\",\n        \"buttonText\": \"Get Started\",\n        \"image\": \"https://picsum.photos/seed/38aa40829658179ba447/1600/900\"\n      }\n    }\n  ]\n};\n  return <WebsiteRenderer schema={schema} />;\n}\n"
+  },
+  "assets": {
+    "schema": "{\"theme\":\"light\",\"layout\":{\"navbar\":true,\"footer\":true},\"sections\":[{\"type\":\"hero\",\"variant\":\"v1\",\"props\":{\"title\":\"Transform Your Business\",\"subtitle\":\"We provide innovative solutions to help you succeed\",\"buttonText\":\"Get Started\",\"image\":\"https://picsum.photos/seed/38aa40829658179ba447/1600/900\"}}]}"
+  },
+  "timestamp": "2026-04-05T22:32:26.942Z"
+}

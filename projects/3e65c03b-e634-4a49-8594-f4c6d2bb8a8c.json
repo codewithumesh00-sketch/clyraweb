@@ -1,0 +1,8 @@
+{
+  "uid": "pmXjhblBQYcgwl8gX8hjjRdbSDN2",
+  "pages": {
+    "src/app/page.tsx": "\nexport default function HomePage() {\n  return (\n    <div style={{\n      fontFamily: \"sans-serif\",\n      background: \"#09090b\",\n      color: \"white\",\n      minHeight: \"100vh\"\n    }}>\n      <nav style={{\n        padding: \"20px\",\n        borderBottom: \"1px solid #27272a\"\n      }}>\n        <h2>TEMPLATE3</h2>\n      </nav>\n\n      \n      <section style={{padding:\"80px 20px\", background:\"#111827\"}}>\n        <h1 style={{fontSize:\"56px\"}}>Build Websites</h1>\n        <p>Create stunning websites with AI.</p>\n      </section>\n    \n\n      <section style={{ padding: \"40px 20px\" }}>\n        <h2>About</h2>\n        <p>Professional AI-generated section for template3</p>\n      </section>\n\n      <section style={{ padding: \"40px 20px\" }}>\n        <h2>Services</h2>\n        <ul>\n          \n        </ul>\n      </section>\n\n      <section style={{ padding: \"40px 20px\" }}>\n        <h2>Contact</h2>\n        <p>contact@clyraweb.ai</p>\n      </section>\n\n      <footer style={{\n        padding: \"20px\",\n        borderTop: \"1px solid #27272a\"\n      }}>\n        \u00a9 2026 ClyraWeb\n      </footer>\n    </div>\n  );\n}\n"
+  },
+  "assets": {},
+  "timestamp": "2026-04-02T00:29:57.012Z"
+}

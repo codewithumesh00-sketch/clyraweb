@@ -1,0 +1,8 @@
+{
+  "uid": "rtVFoRYI3OVIbg0wpdckDOy0Hfp1",
+  "pages": {
+    "src/app/page.tsx": "\n\"use client\";\n\nimport WebsiteRenderer from \"@/components/renderer/WebsiteRenderer\";\n\nconst schema = {\n  \"theme\": \"light\",\n  \"layout\": {\n    \"navbar\": true,\n    \"footer\": true\n  },\n  \"sections\": [\n    {\n      \"type\": \"hero\",\n      \"variant\": 1,\n      \"props\": {\n        \"title\": \"Build Modern Websites Instantly\",\n        \"subtitle\": \"AI-generated layouts, reusable blocks, and export-ready production code.\",\n        \"buttonText\": \"Get Started\"\n      }\n    },\n    {\n      \"type\": \"features\",\n      \"variant\": 2,\n      \"props\": {\n        \"title\": \"Powerful features\",\n        \"subtitle\": \"Everything needed to build premium websites faster.\",\n        \"items\": [\n          {\n            \"title\": \"Dynamic Sections\",\n            \"description\": \"Reusable blocks powered by AI prompts.\"\n          },\n          {\n            \"title\": \"Live Editing\",\n            \"description\": \"Visual editor synced with schema rendering.\"\n          },\n          {\n            \"title\": \"Export Ready\",\n            \"description\": \"Download production-ready Next.js code instantly.\"\n          },\n          {\n            \"title\": \"Theme Engine\",\n            \"description\": \"Automatic color and dark/light system generation.\"\n          }\n        ]\n      }\n    }\n  ]\n};\n\nexport default function Page() {\n  return <WebsiteRenderer schema={schema} />;\n}\n"
+  },
+  "assets": {},
+  "timestamp": "2026-04-05T15:46:49.826Z"
+}

@@ -1,0 +1,13 @@
+{
+  "uid": "Hak0z00DgFSFFwcdrb0tvSOKbbQ2",
+  "pages": {
+    "src/components/AboutSection.tsx": "",
+    "src/components/Footer.tsx": "",
+    "src/components/Navbar.tsx": "",
+    "src/components/ContactSection.tsx": "",
+    "src/components/Hero.tsx": "",
+    "src/components/ServicesSection.tsx": ""
+  },
+  "assets": {},
+  "timestamp": "2026-03-28T06:57:28.481Z"
+}

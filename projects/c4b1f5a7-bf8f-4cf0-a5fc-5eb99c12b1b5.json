@@ -1,0 +1,14 @@
+{
+  "uid": "Hak0z00DgFSFFwcdrb0tvSOKbbQ2",
+  "pages": {
+    "src/components/AboutSection.tsx": "import data from \"@/data/site.json\";\n\nexport default function AboutSection() {\n  return (\n    <section style=>\n      <h2>About</h2>\n      <p>{data.about.text}</p>\n    </section>\n  );\n}",
+    "src/components/Footer.tsx": "import data from \"@/data/site.json\";\n\nexport default function Footer() {\n  return (\n    <footer\n      style={{\n        padding: \"20px\",\n        background: \"#111\",\n        color: \"#fff\",\n        textAlign: \"center\"}\n    >\n      <p>{data.footer.text}</p>\n    </footer>\n  );\n}",
+    "src/components/Navbar copy.tsx": "type NavbarProps = {\n  data?: any;\n};\n\nexport default function Navbar({ data }: NavbarProps) {\n  return (\n    <nav\n      style={{\n        display: \"flex\",\n        justifyContent: \"space-between\",\n        padding: \"16px 32px\",\n        background: \"#111\",\n        color: \"#fff\"}\n    >\n      {/* Logo */}\n      <a href=\"/\" style=>\n        {data?.navbar?.logo || \"MySite\"}\n      </a>\n\n      {/* Links */}\n      <div style=>\n        <a href=\"#home\">Home</a>\n        <a href=\"#about\">About</a>\n        <a href=\"#services\">Services</a>\n        <a href=\"#contact\">Contact</a>\n      </div>\n    </nav>\n  );\n}",
+    "src/components/Navbar.tsx": "export default function Navbar() {\n  return (\n    <nav style=>\n      <a\n        href=\"/\"\n        style={{\n          color: \"#fff\",\n          fontSize: \"20px\",\n          textDecoration: \"none\",\n          fontWeight: \"bold\"}\n      >\n        My Website\n      </a>\n    </nav>\n  );\n}",
+    "src/components/ContactSection.tsx": "import data from \"@/data/site.json\";\n\nexport default function ContactSection() {\n  return (\n    <section style=>\n      <h2>Contact</h2>\n      <p>Email: {data.contact.email}</p>\n    </section>\n  );\n}",
+    "src/components/Hero.tsx": "import data from \"@/data/site.json\";\n\nexport default function Hero() {\n  return (\n    <section style=>\n      <h1>{data.hero.title}</h1>\n      <p>{data.hero.subtitle}</p>\n    </section>\n  );\n}",
+    "src/components/ServicesSection.tsx": "import data from \"@/data/site.json\";\n\nexport default function ServicesSection() {\n  return (\n    <section style=>\n      <h2>Services</h2>\n      <ul>\n        {data.services.map((service, index) => (\n          <li key={index}>{service}</li>\n        ))}\n      </ul>\n    </section>\n  );\n}"
+  },
+  "assets": {},
+  "timestamp": "2026-03-29T18:24:03.442Z"
+}

@@ -1,0 +1,331 @@
+import io
+import zipfile
+import requests
+import os
+import hashlib
+import re
+import json
+import uuid
+from typing import Optional
+from urllib.parse import quote
+
+
+from ai_engine import generate_images
+from fastapi import FastAPI, WebSocket
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from dotenv import load_dotenv
+from theme_engine import generate_theme
+from logo_engine import generate_logo
+from agent import generate_ui_json, generate_seo_blog
+
+load_dotenv()
+
+app = FastAPI(title="Clyra AI Backend 🚀")
+active_connections = []
+
+NETLIFY_TOKEN = os.getenv("NETLIFY_TOKEN")
+
+
+# -------------------------------
+# REQUEST MODELS
+# -------------------------------
+class GenerateRequest(BaseModel):
+    prompt: str
+    template: Optional[str] = None
+    content: Optional[dict] = None
+
+
+class BlogRequest(BaseModel):
+    prompt: str
+
+
+# -------------------------------
+# CORS
+# -------------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# -------------------------------
+# HEALTH
+# -------------------------------
+@app.get("/")
+def home():
+    return {"status": "OK 🚀", "message": "Backend running"}
+
+
+# -------------------------------
+# WEBSOCKET LIVE PREVIEW
+# -------------------------------
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    active_connections.append(websocket)
+
+    try:
+        while True:
+            await websocket.receive_text()
+    except Exception:
+        if websocket in active_connections:
+            active_connections.remove(websocket)
+
+
+# -------------------------------
+# GENERATE
+# -------------------------------
+
+
+@app.post("/generate")
+async def generate(req: GenerateRequest):
+    prompt = req.prompt.strip()
+
+    if not prompt:
+        return {"success": False, "error": "Prompt required"}
+
+    try:
+        print("⚡ Generating:", prompt)
+
+        data = generate_ui_json(prompt, current_content=req.content)
+        images = generate_images(prompt)
+        theme = generate_theme(prompt) or {}
+
+        text = prompt.lower()
+
+        # ================= HERO VARIANT =================
+        hero_variant = "v1"
+
+        if "travel" in text:
+            hero_variant = "v2"
+        elif "saas" in text or "software" in text or "crm" in text:
+            hero_variant = "v4"
+        elif "furniture" in text or "chair" in text:
+            hero_variant = "v3"
+        elif (
+            "real estate" in text
+            or "real state" in text
+            or "realstate" in text
+            or "property" in text
+        ):
+            hero_variant = "v5"
+
+        # ================= SECTION VARIANTS =================
+        features_variant = "v1"
+        pricing_variant = "v1"
+        faq_variant = "v1"
+        testimonials_variant = "v1"
+        cta_variant = "v1"
+
+        if "travel" in text:
+            features_variant = "v2"
+            pricing_variant = "v2"
+            faq_variant = "v2"
+            testimonials_variant = "v2"
+
+        elif "saas" in text or "software" in text or "crm" in text:
+            features_variant = "v4"
+            pricing_variant = "v4"
+            faq_variant = "v3"
+            testimonials_variant = "v2"
+            cta_variant = "v2"
+
+        elif "furniture" in text or "chair" in text:
+            features_variant = "v5"
+            pricing_variant = "v3"
+            faq_variant = "v2"
+
+        website_schema = {
+            "theme": "dark" if theme.get("bg_color") == "#09090B" else "light",
+            "layout": {
+                "navbar": True,
+                "footer": True
+            },
+            "navigation": {
+                "links": [
+                    {"label": "Home", "href": "#home"},
+                    {"label": "Features", "href": "#features"},
+                    {"label": "Pricing", "href": "#pricing"},
+                    {"label": "FAQ", "href": "#faq"},
+                    {"label": "Testimonials", "href": "#testimonials"},
+                    {"label": "Contact", "href": "#cta"}
+                ]
+            },
+            "pages": [
+                {
+                    "page": "home",
+                    "sections": [
+                        {
+                            "type": "hero",
+                            "variant": hero_variant,
+                            "props": {
+                                "title": data.get("hero", {}).get(
+                                    "heading",
+                                    prompt.title()
+                                ),
+                                "subtitle": data.get("hero", {}).get(
+                                    "subheading",
+                                    "Generated by Clyra AI"
+                                ),
+                                "buttonText": data.get("hero", {}).get(
+                                    "buttonText",
+                                    "Get Started"
+                                ),
+                                "image": images.get("hero_image")
+                            }
+                        },
+                        {
+                            "type": "features",
+                            "variant": features_variant
+                        },
+                        {
+                            "type": "pricing",
+                            "variant": pricing_variant
+                        },
+                        {
+                            "type": "faq",
+                            "variant": faq_variant
+                        },
+                        {
+                            "type": "testimonials",
+                            "variant": testimonials_variant
+                        },
+                        {
+                            "type": "cta",
+                            "variant": cta_variant
+                        }
+                    ]
+                }
+            ]
+        }
+
+        return {
+            "success": True,
+            "website": website_schema
+        }
+
+    except Exception as e:
+        print("❌ ERROR:", e)
+        return {"success": False, "error": str(e)}
+
+# -------------------------------
+# BLOG
+# -------------------------------
+@app.post("/generate-blog")
+async def generate_blog(req: BlogRequest):
+    result = generate_seo_blog(req.prompt)
+
+    return {
+        "success": True,
+        "title": result["title"],
+        "blog": result["blog"]
+    }
+
+
+# -------------------------------
+# SAVE PROJECT
+# -------------------------------
+@app.post("/save")
+async def save_project(data: dict):
+    project_id = str(uuid.uuid4())
+
+    os.makedirs("projects", exist_ok=True)
+
+    with open(f"projects/{project_id}.json", "w") as f:
+        json.dump(data, f, indent=2)
+
+    return {"success": True, "project_id": project_id}
+
+
+# -------------------------------
+# LOAD PROJECT
+# -------------------------------
+@app.get("/project/{project_id}")
+def load_project(project_id: str):
+    path = f"projects/{project_id}.json"
+
+    if not os.path.exists(path):
+        return {"success": False, "error": "Not found"}
+
+    with open(path) as f:
+        return {"success": True, "data": json.load(f)}
+
+
+# -------------------------------
+# ZIP DOWNLOAD
+# -------------------------------
+@app.post("/download-zip")
+async def download_zip(data: dict):
+    pages = data.get("pages", {})
+
+    buffer = io.BytesIO()
+
+    with zipfile.ZipFile(buffer, "w") as zf:
+        for name, content in pages.items():
+            zf.writestr(name, content)
+
+    buffer.seek(0)
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=site.zip"}
+    )
+
+
+# -------------------------------
+# DEPLOY TO NETLIFY
+# -------------------------------
+@app.post("/deploy")
+async def deploy(data: dict):
+    pages = data.get("pages", {})
+
+    if not NETLIFY_TOKEN:
+        return {"success": False, "error": "No Netlify token"}
+
+    try:
+        files = {
+            name: hashlib.sha1(html.encode()).hexdigest()
+            for name, html in pages.items()
+        }
+
+        site_res = requests.post(
+            "https://api.netlify.com/api/v1/sites",
+            headers={"Authorization": f"Bearer {NETLIFY_TOKEN}"}
+        )
+
+        site = site_res.json()
+        site_id = site["id"]
+
+        deploy_res = requests.post(
+            f"https://api.netlify.com/api/v1/sites/{site_id}/deploys",
+            headers={"Authorization": f"Bearer {NETLIFY_TOKEN}"},
+            json={"files": files}
+        )
+
+        deploy_id = deploy_res.json()["id"]
+
+        for name, html in pages.items():
+            requests.put(
+                f"https://api.netlify.com/api/v1/deploys/{deploy_id}/files/{name}",
+                headers={"Authorization": f"Bearer {NETLIFY_TOKEN}"},
+                data=html.encode()
+            )
+
+        return {"success": True, "url": site["ssl_url"]}
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+# -------------------------------
+# RUN
+# -------------------------------
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)

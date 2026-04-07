@@ -1,0 +1,10 @@
+{
+  "uid": "Ihap9veNwKcrtcC5IJGyZWAtmE72",
+  "pages": {
+    "src/app/page.tsx": "\n\"use client\";\n\nimport WebsiteRenderer from \"@/components/renderer/WebsiteRenderer\";\n\nexport default function HomePage() {\n  const schema = {\n  \"theme\": \"light\",\n  \"layout\": {\n    \"navbar\": true,\n    \"footer\": true\n  },\n  \"sections\": [\n    {\n      \"type\": \"hero\",\n      \"variant\": \"v1\",\n      \"props\": {\n        \"title\": \"Experience the Best Food in Town\",\n        \"subtitle\": \"Discover our delicious menu and enjoy a unique dining experience\",\n        \"buttonText\": \"Get Started\",\n        \"image\": \"https://picsum.photos/seed/b1b99891122f73b3ab93/1600/900\"\n      }\n    }\n  ]\n};\n  return <WebsiteRenderer schema={schema} />;\n}\n"
+  },
+  "assets": {
+    "schema": "{\"theme\":\"light\",\"layout\":{\"navbar\":true,\"footer\":true},\"sections\":[{\"type\":\"hero\",\"variant\":\"v1\",\"props\":{\"title\":\"Experience the Best Food in Town\",\"subtitle\":\"Discover our delicious menu and enjoy a unique dining experience\",\"buttonText\":\"Get Started\",\"image\":\"https://picsum.photos/seed/b1b99891122f73b3ab93/1600/900\"}}]}"
+  },
+  "timestamp": "2026-04-05T23:10:09.248Z"
+}

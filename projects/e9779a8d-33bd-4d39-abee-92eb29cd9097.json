@@ -1,0 +1,8 @@
+{
+  "uid": "Ihap9veNwKcrtcC5IJGyZWAtmE72",
+  "pages": {
+    "src/app/page.tsx": "\n\"use client\";\n\nimport WebsiteRenderer from \"@/components/renderer/WebsiteRenderer\";\n\nexport default function Page() {\n  const schema = {\n  \"page\": \"home\",\n  \"theme\": \"dark\",\n  \"seo\": {\n    \"title\": \"AI Generated Website\",\n    \"description\": \"Generated dynamically from prompt.\"\n  },\n  \"layout\": {\n    \"navbar\": true,\n    \"footer\": true\n  },\n  \"sections\": [\n    {\n      \"type\": \"hero\",\n      \"variant\": \"v1\",\n      \"props\": {\n        \"title\": \"Scale Faster with AI SaaS\",\n        \"subtitle\": \"Generate beautiful multi-page websites instantly using prompts.\",\n        \"buttonText\": \"Start Building\",\n        \"image\": \"https://picsum.photos/seed/6b5fc2188f51e635ccb1/1600/900\"\n      }\n    },\n    {\n      \"type\": \"features\",\n      \"variant\": \"v1\",\n      \"props\": {}\n    }\n  ]\n};\n  return <WebsiteRenderer schema={schema} />;\n}\n"
+  },
+  "assets": {},
+  "timestamp": "2026-04-05T22:04:08.118Z"
+}

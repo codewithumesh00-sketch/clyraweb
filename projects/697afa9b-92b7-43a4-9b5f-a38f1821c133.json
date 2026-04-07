@@ -1,0 +1,14 @@
+{
+  "uid": "Hak0z00DgFSFFwcdrb0tvSOKbbQ2",
+  "pages": {
+    "src/components/AboutSection.tsx": "export default function AboutSection({ data }) {\n  return (\n    <section style={{}}>\n      <h2>About</h2>\n      <p>{data.about.text}</p>\n    </section>\n  );\n}",
+    "src/components/Footer.tsx": "export default function Footer({ data }) {\n  return (\n    <footer\n      style={{\n        padding: \"20px\",\n        background: \"#111\",\n        color: \"#fff\",\n        textAlign: \"center\"}}\n    >\n      <p>{data.footer.text}</p>\n    </footer>\n  );\n}",
+    "src/components/Navbar copy.tsx": "export default function Navbar({ data }) {\n  return (\n    <nav\n      style={{\n        padding: \"16px 32px\",\n        background: \"#111\",\n        color: \"#fff\"}}\n    >\n      <a\n        href=\"/\"\n        style={{\n          color: \"#fff\",\n          textDecoration: \"none\",\n          fontSize: \"20px\",\n          fontWeight: \"bold\"}}\n      >\n        {data?.navbar?.title || \"My Website\"}\n      </a>\n    </nav>\n  );\n}",
+    "src/components/Navbar.tsx": "export default function Navbar({ data }) {\n  return (\n    <nav style={{}}>\n      <a href=\"/\" style={{}}>\n        {data.navbar.title}\n      </a>\n    </nav>\n  );\n}",
+    "src/components/ContactSection.tsx": "export default function ContactSection({ data }) {\n  return (\n    <section style={{}}>\n      <h2>Contact</h2>\n      <p>Email: {data.contact.email}</p>\n    </section>\n  );\n}",
+    "src/components/Hero.tsx": "export default function Hero({ data }) {\n  return (\n    <section style={{}}>\n      <h1>{data.hero.title}</h1>\n      <p>{data.hero.subtitle}</p>\n    </section>\n  );\n}",
+    "src/components/ServicesSection.tsx": "export default function ServicesSection({ data }) {\n  return (\n    <section style={{}}>\n      <h2>Services</h2>\n      <ul>\n        {data.services.map((service, index) => (\n          <li key={index}>{service}</li>\n        ))}\n      </ul>\n    </section>\n  );\n}"
+  },
+  "assets": {},
+  "timestamp": "2026-03-29T21:45:01.784Z"
+}

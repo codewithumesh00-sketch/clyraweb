@@ -1,0 +1,10 @@
+{
+  "uid": "Ihap9veNwKcrtcC5IJGyZWAtmE72",
+  "pages": {
+    "src/app/page.tsx": "\n\"use client\";\n\nimport WebsiteRenderer from \"@/components/renderer/WebsiteRenderer\";\n\nexport default function HomePage() {\n  const schema = {\n  \"theme\": \"light\",\n  \"layout\": {\n    \"navbar\": true,\n    \"footer\": true\n  },\n  \"sections\": [\n    {\n      \"type\": \"hero\",\n      \"variant\": \"v1\",\n      \"props\": {\n        \"title\": \"Explore the Best Properties\",\n        \"subtitle\": \"Discover your perfect match with our expert real estate agents\",\n        \"buttonText\": \"Get Started\",\n        \"image\": \"https://picsum.photos/seed/bf4c0f4a55da9163c9c6/1600/900\"\n      }\n    }\n  ]\n};\n  return <WebsiteRenderer schema={schema} />;\n}\n"
+  },
+  "assets": {
+    "schema": "{\"theme\":\"light\",\"layout\":{\"navbar\":true,\"footer\":true},\"sections\":[{\"type\":\"hero\",\"variant\":\"v1\",\"props\":{\"title\":\"Explore the Best Properties\",\"subtitle\":\"Discover your perfect match with our expert real estate agents\",\"buttonText\":\"Get Started\",\"image\":\"https://picsum.photos/seed/bf4c0f4a55da9163c9c6/1600/900\"}}]}"
+  },
+  "timestamp": "2026-04-05T23:03:11.753Z"
+}

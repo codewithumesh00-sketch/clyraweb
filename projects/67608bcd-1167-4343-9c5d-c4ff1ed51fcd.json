@@ -1,0 +1,8 @@
+{
+  "uid": "rtVFoRYI3OVIbg0wpdckDOy0Hfp1",
+  "pages": {
+    "src/app/page.tsx": "\n\"use client\";\n\nimport WebsiteRenderer from \"@/components/renderer/WebsiteRenderer\";\n\nconst schema = {\n  \"theme\": \"light\",\n  \"layout\": {\n    \"navbar\": true,\n    \"footer\": true\n  },\n  \"sections\": [\n    {\n      \"type\": \"hero\",\n      \"variant\": 1\n    },\n    {\n      \"type\": \"features\",\n      \"variant\": 2\n    }\n  ]\n};\n\nexport default function Page() {\n  return <WebsiteRenderer schema={schema} />;\n}\n"
+  },
+  "assets": {},
+  "timestamp": "2026-04-05T14:23:43.758Z"
+}
