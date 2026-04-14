@@ -1,8 +1,0 @@
-{
-  "uid": "KgdTE6bmMKg9zIEFYsGnEwWHbV23",
-  "pages": {
-    "src/app/page.tsx": "\"use client\";\n\nimport Navbar from \"@/templates/template1/components/Navbar\";\nimport Hero from \"@/templates/template1/home/Hero\";\nimport AboutSection from \"@/templates/template1/about/AboutSection\";\nimport ServicesSection from \"@/templates/template1/services/ServicesSection\";\nimport ContactSection from \"@/templates/template1/contact/ContactSection\";\nimport Footer from \"@/templates/template1/components/Footer\";\n\nconst data = {\n  \"heroTitle\": \"Build Websites\",\n  \"heroSubtitle\": \"Create stunning websites with AI.\",\n  \"businessName\": \"AI Brand\",\n  \"services\": [],\n  \"heroImage\": \"https://source.unsplash.com/1200x600/?business,office,banner\",\n  \"logoSvg\": \"\\n<svg width=\\\"120\\\" height=\\\"120\\\" xmlns=\\\"http://www.w3.org/2000/svg\\\">\\n  <rect width=\\\"120\\\" height=\\\"120\\\" rx=\\\"20\\\" fill=\\\"#F59E0B\\\" />\\n  <text x=\\\"50%\\\" y=\\\"55%\\\" font-size=\\\"48\\\" text-anchor=\\\"middle\\\" fill=\\\"white\\\" font-family=\\\"Arial\\\" dy=\\\".3em\\\">\\n    B\\n  </text>\\n</svg>\\n\",\n  \"theme\": {\n    \"primary_color\": \"#F59E0B\",\n    \"secondary_color\": \"#EF4444\",\n    \"bg_color\": \"#FFFFFF\",\n    \"text_color\": \"#111111\"\n  }\n} as const;\n\nexport default function Page() {\n  return (\n    <main className=\"overflow-x-hidden\">\n      <Navbar data={data} />\n      <Hero data={data} />\n      <AboutSection data={data} />\n      <ServicesSection data={data} />\n      <ContactSection data={data} />\n      <Footer data={data} />\n    </main>\n  );\n}\n"
-  },
-  "assets": {},
-  "timestamp": "2026-04-02T02:21:30.624Z"
-}

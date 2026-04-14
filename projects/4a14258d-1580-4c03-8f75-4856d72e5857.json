@@ -1,8 +1,0 @@
-{
-  "uid": "KgdTE6bmMKg9zIEFYsGnEwWHbV23",
-  "pages": {
-    "src/app/page.tsx": "\nexport default function HomePage() {\n  return (\n    <div style={{\n      fontFamily: \"sans-serif\",\n      background: \"#09090b\",\n      color: \"white\",\n      minHeight: \"100vh\"\n    }}>\n      <nav style={{\n        padding: \"20px\",\n        borderBottom: \"1px solid #27272a\"\n      }}>\n        <h2>TEMPLATE3</h2>\n      </nav>\n\n      <section style={{ padding: \"60px 20px\" }}>\n        <h1 style={{ fontSize: \"48px\", marginBottom: \"16px\" }}>\n          Unify Your Workflow. Amplify Your Impact.\n        </h1>\n        <p style={{ fontSize: \"20px\", opacity: 0.8 }}>\n          Intuitive SaaS platform designed to integrate, automate, and accelerate your team's potential.\n        </p>\n      </section>\n\n      <section style={{ padding: \"40px 20px\" }}>\n        <h2>About</h2>\n        <p>Professional AI-generated section for template3</p>\n      </section>\n\n      <section style={{ padding: \"40px 20px\" }}>\n        <h2>Services</h2>\n        <ul>\n          <li>Modern Design</li>\n          <li>Fast Performance</li>\n          <li>Responsive Layout</li>\n        </ul>\n      </section>\n\n      <section style={{ padding: \"40px 20px\" }}>\n        <h2>Contact</h2>\n        <p>contact@clyraui.ai</p>\n      </section>\n\n      <footer style={{\n        padding: \"20px\",\n        borderTop: \"1px solid #27272a\"\n      }}>\n        \u00a9 2026 ClyraUI\n      </footer>\n    </div>\n  );\n}\n"
-  },
-  "assets": {},
-  "timestamp": "2026-04-01T23:08:52.094Z"
-}

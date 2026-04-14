@@ -1,8 +1,0 @@
-{
-  "uid": "rtVFoRYI3OVIbg0wpdckDOy0Hfp1",
-  "pages": {
-    "src/app/page.tsx": "\n\"use client\";\n\nimport WebsiteRenderer from \"@/components/renderer/WebsiteRenderer\";\n\nconst schema = {\n  \"theme\": \"light\",\n  \"layout\": {\n    \"navbar\": true,\n    \"footer\": true\n  },\n  \"sections\": [\n    {\n      \"type\": \"hero\",\n      \"variant\": 1,\n      \"props\": {\n        \"title\": \"Scale Your Business with Smart SaaS\",\n        \"subtitle\": \"AI-powered workflows, automation, and growth tools built for modern startups.\",\n        \"buttonText\": \"Start Free Trial\"\n      }\n    },\n    {\n      \"type\": \"features\",\n      \"variant\": 1,\n      \"props\": {\n        \"title\": \"Everything your SaaS needs\",\n        \"subtitle\": \"Modern systems designed for scale, growth, and performance.\",\n        \"items\": [\n          {\n            \"title\": \"AI Automation\",\n            \"description\": \"Reduce manual work with smart workflow engines.\"\n          },\n          {\n            \"title\": \"Real-time Analytics\",\n            \"description\": \"Track customer actions, retention, and revenue instantly.\"\n          },\n          {\n            \"title\": \"Secure APIs\",\n            \"description\": \"Enterprise-grade integrations and protected data flow.\"\n          },\n          {\n            \"title\": \"Fast Deployment\",\n            \"description\": \"Ship new product experiences in minutes.\"\n          }\n        ]\n      }\n    }\n  ]\n};\n\nexport default function Page() {\n  return <WebsiteRenderer schema={schema} />;\n}\n"
-  },
-  "assets": {},
-  "timestamp": "2026-04-05T14:57:50.286Z"
-}

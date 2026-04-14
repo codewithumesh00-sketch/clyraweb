@@ -1,8 +1,0 @@
-{
-  "uid": "rtVFoRYI3OVIbg0wpdckDOy0Hfp1",
-  "pages": {
-    "src/app/page.tsx": "\"use client\";\n\nimport WebsiteRenderer from \"@/components/renderer/WebsiteRenderer\";\n\nexport default function Page() {\n  const data = {\n  \"page\": \"studio-preview\",\n  \"theme\": \"light\",\n  \"layout\": {\n    \"navbar\": true,\n    \"footer\": true\n  },\n  \"sections\": [\n    {\n      \"type\": \"hero\",\n      \"variant\": 1,\n      \"props\": {\n        \"title\": \"Welcome to ClyraUI \ud83d\ude80\"\n      }\n    }\n  ]\n};\n\n  return <WebsiteRenderer schema={data} />;\n}\n"
-  },
-  "assets": {},
-  "timestamp": "2026-04-05T14:03:43.251Z"
-}

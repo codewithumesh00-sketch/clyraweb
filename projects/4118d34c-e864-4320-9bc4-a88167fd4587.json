@@ -1,8 +1,0 @@
-{
-  "uid": "KgdTE6bmMKg9zIEFYsGnEwWHbV23",
-  "pages": {
-    "src/app/page.tsx": "\nimport Navbar from \"../templates/template6/components/Navbar\";\nimport Hero from \"../templates/template6/home/Hero\";\nimport AboutSection from \"../templates/template6/about/AboutSection\";\nimport ServicesSection from \"../templates/template6/services/ServicesSection\";\nimport ContactSection from \"../templates/template6/contact/ContactSection\";\nimport Footer from \"../templates/template6/components/Footer\";\n\nexport default function HomePage() {\n  return (\n    <>\n      <Navbar />\n      <Hero \n        title=\"Clarity in Design.\"\n        subtitle=\"Streamlined aesthetics meeting purposeful functionality.\"\n      />\n      <AboutSection />\n      <ServicesSection />\n      <ContactSection />\n      <Footer />\n    </>\n  );\n}\n"
-  },
-  "assets": {},
-  "timestamp": "2026-04-01T22:56:54.930Z"
-}

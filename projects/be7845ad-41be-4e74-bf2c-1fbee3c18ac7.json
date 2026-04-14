@@ -1,8 +1,0 @@
-{
-  "uid": "Ihap9veNwKcrtcC5IJGyZWAtmE72",
-  "pages": {
-    "src/app/page.tsx": "\n\"use client\";\n\nimport WebsiteRenderer from \"@/components/renderer/WebsiteRenderer\";\nimport { createDynamicSchema } from \"@/lib/schemaStore\";\n\nexport default function Page() {\n  const schema = createDynamicSchema(\"create\");\n  return <WebsiteRenderer schema={schema} />;\n}\n\n"
-  },
-  "assets": {},
-  "timestamp": "2026-04-05T22:02:04.676Z"
-}

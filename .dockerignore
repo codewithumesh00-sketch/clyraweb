@@ -1,6 +1,9 @@
+clyraui-frontend
+projects
 __pycache__
 *.pyc
+*.log
 .env
-venv
-node_modules
 .git
+node_modules
+cache.json
