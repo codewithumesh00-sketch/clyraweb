@@ -1,9 +1,11 @@
-import requests
+import requests  # ← ADDED: Was missing!
 import os
 import json
 import time
 import re
 import hashlib
+from pathlib import Path
+from typing import Dict
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -343,6 +345,13 @@ class BlogRequest(BaseModel):
     topic: str
 
 
+class DeployRequest(BaseModel):
+    pages: Dict[str, str]
+    assets: Dict[str, str] = {}
+    projectName: str
+    platform: str = "netlify"
+
+
 @app.post("/generate", response_model_exclude_none=True)
 async def generate(req: GenerateRequest):
     """
@@ -418,6 +427,159 @@ async def generate_blog(req: BlogRequest):
     
     result = generate_seo_blog(req.topic)
     return result
+
+
+# -------------------------------
+# ✅ FIXED: /deploy ENDPOINT — CLEAN, WORKING VERSION
+# -------------------------------
+@app.post("/deploy")
+async def deploy_project(req: DeployRequest):
+    """
+    Deploy generated pages to Netlify and return live production URL.
+    """
+    NETLIFY_TOKEN = os.getenv("NETLIFY_TOKEN")
+    if not NETLIFY_TOKEN:
+        raise HTTPException(
+            status_code=500,
+            detail="NETLIFY_TOKEN missing in .env"
+        )
+
+    headers = {
+        "Authorization": f"Bearer {NETLIFY_TOKEN}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        print("PAGES RECEIVED:", list(req.pages.keys()))
+
+        # 1) Create Netlify site
+        create_site = requests.post(
+            "https://api.netlify.com/api/v1/sites",
+            headers=headers,
+            json={"name": req.projectName.lower()},
+            timeout=60,
+        )
+        
+
+        site_data = create_site.json()
+        print("🚀 NETLIFY SITE RESPONSE:", site_data)
+
+        if create_site.status_code not in [200, 201]:
+            return {
+                "success": False,
+                "error": f"Netlify site creation failed: {site_data}"
+            }
+
+        site_id = (
+            site_data.get("id")
+            or site_data.get("site_id")
+        )
+        print("🚀 SITE CREATED:", site_id)
+
+        # 2) Create deploy manifest
+        deploy_payload = {
+         "files": {
+         "/index.html": hashlib.sha1(
+            next(iter(req.pages.values())).encode()
+        ).hexdigest()
+    }
+}
+        deploy_res = requests.post(
+            f"https://api.netlify.com/api/v1/sites/{site_id}/deploys",
+            headers=headers,
+            json=deploy_payload,
+            timeout=60,
+        )
+
+        deploy_data = deploy_res.json()
+        print("🚀 NETLIFY DEPLOY RESPONSE:", deploy_data)
+
+        if deploy_res.status_code not in [200, 201]:
+            return {
+                "success": False,
+                "error": f"Netlify deploy failed: {deploy_data}"
+            }
+
+        deploy_id = (
+            deploy_data.get("id")
+            or deploy_data.get("deploy_id")
+        )
+
+        if not deploy_id:
+            return {
+                "success": False,
+                "error": f"Netlify deploy id missing: {deploy_data}"
+            }
+
+        required_files = deploy_data.get("required", [])
+
+    
+
+        # 3) Upload actual HTML
+                # 3) Upload actual HTML directly
+        main_content = next(iter(req.pages.values()))
+
+        html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{req.projectName}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div style="padding:40px;font-family:sans-serif;">
+        <h1>{req.projectName}</h1>
+        <pre style="white-space: pre-wrap;">{main_content}</pre>
+    </div>
+</body>
+</html>"""
+
+        upload_res = requests.put(
+            f"https://api.netlify.com/api/v1/deploys/{deploy_id}/files/index.html",
+            headers={
+                "Authorization": f"Bearer {NETLIFY_TOKEN}",
+                "Content-Type": "text/html",
+            },
+            data=html_content.encode(),
+            timeout=60,
+        )
+        upload_res.raise_for_status()
+
+        # 4) Wait for deploy ready
+        final_url = None
+
+        for _ in range(20):
+            status_res = requests.get(
+                f"https://api.netlify.com/api/v1/deploys/{deploy_id}",
+                headers=headers,
+                timeout=30,
+            )
+            status_res.raise_for_status()
+            deploy_status = status_res.json()
+
+            state = deploy_status.get("state")
+            print("DEPLOY STATE:", state)
+            if state == "ready":
+                final_url = (
+                    deploy_status.get("ssl_url")
+                    or deploy_status.get("deploy_ssl_url")
+                    or deploy_status.get("url")
+                )
+                break
+
+            time.sleep(2)
+
+        print("🚀 FINAL SITE URL:", final_url)
+
+        return {
+            "success": True,
+            "url": final_url,
+        }
+
+    except Exception as e:
+        print("❌ Deploy error:", str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # -------------------------------

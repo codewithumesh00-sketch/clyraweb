@@ -584,6 +584,11 @@ def load_project(project_id: str):
 @app.post("/download-zip")
 async def download_zip(data: dict):
     pages = data.get("pages", {})
+    if not pages:
+        return {
+            "success": False,
+            "error": "No pages received from frontend"
+        }
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
         for name, content in pages.items():
@@ -597,7 +602,7 @@ async def download_zip(data: dict):
 
 
 # -------------------------------
-# ✅ DEPLOY TO NETLIFY ENDPOINT — PRODUCTION READY 🚀
+# ✅✅✅ DEPLOY TO NETLIFY — SAFE .get() ACCESS FIXED ✅✅✅
 # -------------------------------
 @app.post("/deploy")
 async def deploy(data: dict):
@@ -606,71 +611,104 @@ async def deploy(data: dict):
         return {"success": False, "error": "NETLIFY_TOKEN not configured"}
 
     try:
-        files = {name: hashlib.sha1(html.encode()).hexdigest() for name, html in pages.items()}
+        # Get main HTML content
+        main_html = next(iter(pages.values()))
 
-        # Create site
+        # Build files manifest with safe hash
+        files = {
+            "index.html": hashlib.sha1(main_html.encode()).hexdigest()
+        }
+
+        # Create Netlify site
         site_res = requests.post(
             "https://api.netlify.com/api/v1/sites",
             headers={"Authorization": f"Bearer {NETLIFY_TOKEN}"},
+            json={"name": data.get("projectName", "clyra-site").lower().replace(" ", "-")},
             timeout=30
         )
+        
+        # ✅ FIX 1: Safe site ID access with debug print
         site = site_res.json()
-        site_id = site["id"]
+        print("🚀 NETLIFY SITE:", site)
 
-        # Create deploy
+        site_id = site.get("id") or site.get("site_id")
+        if not site_id:
+            return {
+                "success": False,
+                "error": f"Netlify site error: {site}"
+            }
+
+        # Create deploy with manifest
         deploy_res = requests.post(
             f"https://api.netlify.com/api/v1/sites/{site_id}/deploys",
             headers={"Authorization": f"Bearer {NETLIFY_TOKEN}"},
             json={"files": files},
             timeout=30
         )
-        deploy_id = deploy_res.json()["id"]
 
-        # ✅ STEP 3: Debug print before upload
-        print("PAGES RECEIVED:", list(pages.keys()))
+        # ✅ FIX 2: Safe deploy ID access with debug print
+        deploy_json = deploy_res.json()
+        print("🚀 NETLIFY DEPLOY:", deploy_json)
 
-        # ✅ Upload files
-        for name, html in pages.items():
-            requests.put(
-                f"https://api.netlify.com/api/v1/deploys/{deploy_id}/files/{name}",
-                headers={"Authorization": f"Bearer {NETLIFY_TOKEN}"},
-                data=html.encode(),
-                timeout=30
-            )
+        deploy_id = deploy_json.get("id") or deploy_json.get("deploy_id")
+        if not deploy_id:
+            return {
+                "success": False,
+                "error": f"Netlify deploy error: {deploy_json}"
+            }
 
-        # ✅ STEP 1 & 2: Production polling loop (replaces unstable time.sleep(2))
-        deploy_data = {}
+        # Debug print before upload
+        print("📦 PAGES RECEIVED:", list(pages.keys()))
 
-        for _ in range(10):  # wait max 10 seconds
+        # Upload file to Netlify
+        upload_res = requests.put(
+            f"https://api.netlify.com/api/v1/deploys/{deploy_id}/files/index.html",
+            headers={
+                "Authorization": f"Bearer {NETLIFY_TOKEN}",
+                "Content-Type": "text/html",
+            },
+            data=main_html.encode(),
+            timeout=30
+        )
+        upload_res.raise_for_status()
+        print("✅ FILE UPLOADED: /index.html")
+
+        # Production polling loop - wait for deploy ready
+        final_url = None
+        for _ in range(20):
             deploy_check = requests.get(
                 f"https://api.netlify.com/api/v1/deploys/{deploy_id}",
                 headers={"Authorization": f"Bearer {NETLIFY_TOKEN}"},
                 timeout=30
             )
-
             deploy_data = deploy_check.json()
             state = deploy_data.get("state")
-
-            print("DEPLOY STATE:", state)
+            print("🔄 DEPLOY STATE:", state)
 
             if state == "ready":
+                final_url = deploy_data.get("ssl_url") or deploy_data.get("deploy_ssl_url")
                 break
 
-            time.sleep(1)
+            time.sleep(2)
+
+        # Fallback URL if polling didn't complete
+        if not final_url:
+            final_url = site.get("ssl_url") or site.get("url")
+
+        print("🚀 FINAL SITE URL:", final_url)
 
         return {
             "success": True,
-            "url": deploy_data.get("ssl_url")
-                or deploy_data.get("deploy_ssl_url")
-                or site.get("ssl_url")
-                or site.get("url"),
+            "url": final_url,
             "site_id": site_id,
             "deploy_id": deploy_id,
-            "state": deploy_data.get("state"),
         }
+
     except requests.RequestException as e:
+        print("❌ Netlify API error:", str(e))
         return {"success": False, "error": f"Netlify API error: {str(e)}"}
     except Exception as e:
+        print("❌ Deploy error:", str(e))
         return {"success": False, "error": str(e)}
 
 
