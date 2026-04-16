@@ -1,3 +1,4 @@
+﻿from deploy_router import router as deploy_router
 import zipfile
 import requests
 import os
@@ -20,13 +21,16 @@ from agent import generate_ui_json, generate_seo_blog
 
 load_dotenv()
 
-app = FastAPI(title="Clyra AI Backend 🚀")
+app = FastAPI(title="Clyra AI Backend ðŸš€")
 active_connections: list[WebSocket] = []
 
+# âœ… UPDATED: Add SITE_ID and SITE_URL env vars
 NETLIFY_TOKEN = os.getenv("NETLIFY_TOKEN")
+NETLIFY_SITE_ID = os.getenv("NETLIFY_SITE_ID")
+NETLIFY_SITE_URL = os.getenv("NETLIFY_SITE_URL")
 
 # -------------------------------
-# ✅ TYPE DEFINITIONS
+# âœ… TYPE DEFINITIONS
 # -------------------------------
 CategoryType = Literal["blog", "ecommerce", "saas", "portfolio", "business"]
 StyleModeType = Literal[
@@ -35,7 +39,7 @@ StyleModeType = Literal[
 ]
 
 # -------------------------------
-# ✅ STYLE MODE DETECTOR (THE BRAIN 🧠)
+# âœ… STYLE MODE DETECTOR (THE BRAIN ðŸ§ )
 # -------------------------------
 def detect_style_mode(prompt: str) -> StyleModeType:
     """Analyzes prompt keywords and returns style DNA for visual mutation."""
@@ -64,7 +68,7 @@ def detect_style_mode(prompt: str) -> StyleModeType:
 
 
 # -------------------------------
-# ✅ STYLE MODE → THEME MAPPING
+# âœ… STYLE MODE â†’ THEME MAPPING
 # -------------------------------
 def get_style_theme(style_mode: StyleModeType) -> dict:
     """Returns theme config based on style mode for automatic theming."""
@@ -89,7 +93,7 @@ def get_style_theme(style_mode: StyleModeType) -> dict:
 
 
 # -------------------------------
-# ✅ REQUEST MODELS
+# âœ… REQUEST MODELS
 # -------------------------------
 class GenerateRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=2000)
@@ -102,7 +106,7 @@ class BlogRequest(BaseModel):
 
 
 # -------------------------------
-# ✅ CORS CONFIG
+# âœ… CORS CONFIG
 # -------------------------------
 app.add_middleware(
     CORSMiddleware,
@@ -114,15 +118,15 @@ app.add_middleware(
 
 
 # -------------------------------
-# ✅ HEALTH CHECK
+# âœ… HEALTH CHECK
 # -------------------------------
 @app.get("/")
 def home():
-    return {"status": "OK 🚀", "message": "Backend running", "version": "2.1.0"}
+    return {"status": "OK ðŸš€", "message": "Backend running", "version": "2.1.0"}
 
 
 # -------------------------------
-# ✅ WEBSOCKET LIVE PREVIEW
+# âœ… WEBSOCKET LIVE PREVIEW
 # -------------------------------
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -137,7 +141,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 
 # ============================================================
-# ✅ CATEGORY DETECTION (FOR METADATA)
+# âœ… CATEGORY DETECTION (FOR METADATA)
 # ============================================================
 def detect_category(text: str) -> CategoryType:
     """Detect content category from prompt keywords."""
@@ -156,7 +160,7 @@ def detect_category(text: str) -> CategoryType:
 
 
 # ============================================================
-# ✅ 40-TEMPLATE SMART MAPPER
+# âœ… 40-TEMPLATE SMART MAPPER
 # ============================================================
 TEMPLATE_NAME_MAP = {
     "modern business": "template1",
@@ -220,7 +224,7 @@ def choose_template_from_prompt(prompt: str) -> str:
     )
 
     # ---------------------------------------------------
-    # ✅ 1) DIRECT TEMPLATE NAME MATCH
+    # âœ… 1) DIRECT TEMPLATE NAME MATCH
     # ---------------------------------------------------
     normalized_map = {
         name.lower().replace(" ", "").replace("-", "").replace("_", ""): template_id
@@ -239,7 +243,7 @@ def choose_template_from_prompt(prompt: str) -> str:
         return normalized_map[close[0]]
 
     # ---------------------------------------------------
-    # ✅ 2) AI-LEVEL INTENT ROUTING
+    # âœ… 2) AI-LEVEL INTENT ROUTING
     # ---------------------------------------------------
     text = prompt.lower()
 
@@ -287,7 +291,7 @@ def choose_template_from_prompt(prompt: str) -> str:
             return template_id
 
     # ---------------------------------------------------
-    # ✅ 3) SMART COMBINATION RULES
+    # âœ… 3) SMART COMBINATION RULES
     # ---------------------------------------------------
     if "ecommerce" in text and "fashion" in text:
         return "template24"
@@ -304,7 +308,7 @@ def choose_template_from_prompt(prompt: str) -> str:
     return "template1"
 
 # ============================================================
-# ✅ UNIVERSAL EDITABLE DATA BUILDER
+# âœ… UNIVERSAL EDITABLE DATA BUILDER
 # ============================================================
 def build_base_editable_data(prompt: str, images: list[str], category: CategoryType) -> dict:
     """Build shared editable data structure for all categories."""
@@ -330,13 +334,13 @@ def build_base_editable_data(prompt: str, images: list[str], category: CategoryT
         "footer": {
             "brand": brand_name,
             "text": f"Premium digital experience for {prompt}",
-            "copyright": f"© 2026 {prompt.title()}",
+            "copyright": f"Â© 2026 {prompt.title()}",
         },
     }
 
 
 # ============================================================
-# ✅ BLOG CONTENT BUILDER
+# âœ… BLOG CONTENT BUILDER
 # ============================================================
 def build_blog_editable_data(prompt: str, images: list[str]) -> dict:
     """Build editable data specifically for blog category."""
@@ -373,14 +377,14 @@ def build_blog_editable_data(prompt: str, images: list[str]) -> dict:
     base["footer"] = {
         "brand": f"{prompt.title()} Blog",
         "text": f"Your trusted local stories from {prompt}",
-        "copyright": f"© 2026 {prompt.title()} Blog",
+        "copyright": f"Â© 2026 {prompt.title()} Blog",
     }
 
     return base
 
 
 # ============================================================
-# ✅ ECOMMERCE CONTENT BUILDER
+# âœ… ECOMMERCE CONTENT BUILDER
 # ============================================================
 def build_ecommerce_editable_data(prompt: str, images: list[str]) -> dict:
     """Build editable data specifically for ecommerce category."""
@@ -411,7 +415,7 @@ def build_ecommerce_editable_data(prompt: str, images: list[str]) -> dict:
 
 
 # ============================================================
-# ✅ SAAS CONTENT BUILDER
+# âœ… SAAS CONTENT BUILDER
 # ============================================================
 def build_saas_editable_data(prompt: str, images: list[str]) -> dict:
     """Build editable data specifically for SaaS category."""
@@ -436,7 +440,7 @@ def build_saas_editable_data(prompt: str, images: list[str]) -> dict:
 
 
 # ============================================================
-# ✅ MAIN GENERATE ENDPOINT — CLEAN & STABLE
+# âœ… MAIN GENERATE ENDPOINT â€” CLEAN & STABLE
 # ============================================================
 @app.post("/generate")
 async def generate(req: GenerateRequest):
@@ -445,41 +449,41 @@ async def generate(req: GenerateRequest):
         return {"success": False, "error": "Prompt required"}
 
     try:
-        print(f"⚡ Generating: {prompt}")
+        print(f"âš¡ Generating: {prompt}")
 
-        # ✅ AI content generation with safe fallback
+        # âœ… AI content generation with safe fallback
         try:
             data = generate_ui_json(prompt, current_content=req.content)
             if not isinstance(data, dict):
-                print(f"⚠️ Invalid AI response type: {type(data)}")
+                print(f"âš ï¸ Invalid AI response type: {type(data)}")
                 data = {}
         except Exception as ai_error:
-            print(f"⚠️ UI JSON generation failed: {type(ai_error).__name__}: {ai_error}")
+            print(f"âš ï¸ UI JSON generation failed: {type(ai_error).__name__}: {ai_error}")
             data = {}
 
-        # ✅ Stable fallback images (no broken external calls)
+        # âœ… Stable fallback images (no broken external calls)
         images = [
             f"https://picsum.photos/seed/{prompt}-1/1600/900",
             f"https://picsum.photos/seed/{prompt}-2/1600/900",
             f"https://picsum.photos/seed/{prompt}-3/1600/900",
         ]
 
-        # ✅ Empty theme fallback (style handled by detect_style_mode)
+        # âœ… Empty theme fallback (style handled by detect_style_mode)
         theme = {}
 
-        # ✅ Style detection
+        # âœ… Style detection
         style_mode = detect_style_mode(prompt)
-        print(f"🎨 Detected style mode: {style_mode}")
+        print(f"ðŸŽ¨ Detected style mode: {style_mode}")
         style_theme = get_style_theme(style_mode)
 
-        # ✅ Category detection (for metadata only)
+        # âœ… Category detection (for metadata only)
         category = detect_category(prompt)
         
-        # ✅ Smart template selection from 40 options
+        # âœ… Smart template selection from 40 options
         template_id = choose_template_from_prompt(prompt)
-        print(f"📦 Category: {category} | Template: {template_id}")
+        print(f"ðŸ“¦ Category: {category} | Template: {template_id}")
 
-        # ✅ Build editable data by category
+        # âœ… Build editable data by category
         if category == "blog":
             editable_data = build_blog_editable_data(prompt, images)
         elif category == "ecommerce":
@@ -489,13 +493,13 @@ async def generate(req: GenerateRequest):
         else:
             editable_data = build_base_editable_data(prompt, images, category)
 
-        # ✅ Merge AI data safely
+        # âœ… Merge AI data safely
         final_editable_data = {
             **editable_data,
             **(data if isinstance(data, dict) else {}),
         }
 
-        # ✅ Final schema with editableData support
+        # âœ… Final schema with editableData support
         website_schema = {
             "category": category,
             "templateId": template_id,
@@ -521,7 +525,7 @@ async def generate(req: GenerateRequest):
 
 
 # -------------------------------
-# ✅ BLOG GENERATION ENDPOINT
+# âœ… BLOG GENERATION ENDPOINT
 # -------------------------------
 @app.post("/generate-blog")
 async def generate_blog(req: BlogRequest):
@@ -533,7 +537,7 @@ async def generate_blog(req: BlogRequest):
 
 
 # -------------------------------
-# ✅ STYLE MODE PREVIEW ENDPOINT
+# âœ… STYLE MODE PREVIEW ENDPOINT
 # -------------------------------
 @app.get("/style/{mode}")
 async def preview_style(mode: str):
@@ -558,7 +562,7 @@ async def preview_style(mode: str):
 
 
 # -------------------------------
-# ✅ SAVE / LOAD PROJECT
+# âœ… SAVE / LOAD PROJECT
 # -------------------------------
 @app.post("/save")
 async def save_project(data: dict):
@@ -579,11 +583,11 @@ def load_project(project_id: str):
 
 
 # -------------------------------
-# ✅ ZIP DOWNLOAD ENDPOINT
+# âœ… ZIP DOWNLOAD ENDPOINT
 # -------------------------------
 @app.post("/download-zip")
 async def download_zip(data: dict):
-    pages = data.get("pages", {})
+    pages = data.get("pages", {}) or data.get("files", {})
     if not pages:
         return {
             "success": False,
@@ -602,119 +606,116 @@ async def download_zip(data: dict):
 
 
 # -------------------------------
-# ✅✅✅ DEPLOY TO NETLIFY — SAFE .get() ACCESS FIXED ✅✅✅
+# âœ…âœ…âœ… FINAL /deploy â€” NETLIFY SHA CHECK FIX âœ…âœ…âœ…
 # -------------------------------
 @app.post("/deploy")
 async def deploy(data: dict):
-    pages = data.get("pages", {})
+    pages = data.get("pages", {}) or data.get("files", {})
+
     if not NETLIFY_TOKEN:
         return {"success": False, "error": "NETLIFY_TOKEN not configured"}
 
+    if not NETLIFY_SITE_ID:
+        return {"success": False, "error": "NETLIFY_SITE_ID not configured"}
+
     try:
-        # Get main HTML content
-        main_html = next(iter(pages.values()))
+        # âœ… STEP 0: find real html page
+        main_html = pages.get("index.html")
 
-        # Build files manifest with safe hash
-        files = {
-            "index.html": hashlib.sha1(main_html.encode()).hexdigest()
-        }
+        if not main_html:
+            for file_name, content in pages.items():
+                if file_name.endswith(".html"):
+                    main_html = content
+                    break
 
-        # Create Netlify site
-        site_res = requests.post(
-            "https://api.netlify.com/api/v1/sites",
-            headers={"Authorization": f"Bearer {NETLIFY_TOKEN}"},
-            json={"name": data.get("projectName", "clyra-site").lower().replace(" ", "-")},
-            timeout=30
-        )
-        
-        # ✅ FIX 1: Safe site ID access with debug print
-        site = site_res.json()
-        print("🚀 NETLIFY SITE:", site)
+        if not main_html:
+            return {"success": False, "error": "No HTML file found for deploy"}
 
-        site_id = site.get("id") or site.get("site_id")
-        if not site_id:
-            return {
-                "success": False,
-                "error": f"Netlify site error: {site}"
-            }
+        # âœ… STEP 1: create byte-safe html digest
+        html_bytes = main_html.encode("utf-8")
+        html_sha = hashlib.sha1(html_bytes).hexdigest()
 
-        # Create deploy with manifest
         deploy_res = requests.post(
-            f"https://api.netlify.com/api/v1/sites/{site_id}/deploys",
-            headers={"Authorization": f"Bearer {NETLIFY_TOKEN}"},
-            json={"files": files},
+            f"https://api.netlify.com/api/v1/sites/{NETLIFY_SITE_ID}/deploys",
+            headers={
+                "Authorization": f"Bearer {NETLIFY_TOKEN}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "files": {
+                    "/index.html": html_sha
+                }
+            },
             timeout=30
         )
 
-        # ✅ FIX 2: Safe deploy ID access with debug print
         deploy_json = deploy_res.json()
-        print("🚀 NETLIFY DEPLOY:", deploy_json)
+        print("ðŸš€ NETLIFY DEPLOY:", deploy_json)
 
-        deploy_id = deploy_json.get("id") or deploy_json.get("deploy_id")
+        deploy_id = deploy_json.get("id")
         if not deploy_id:
             return {
                 "success": False,
-                "error": f"Netlify deploy error: {deploy_json}"
+                "error": f"Deploy create failed: {deploy_json}"
             }
 
-        # Debug print before upload
-        print("📦 PAGES RECEIVED:", list(pages.keys()))
+        # âœ… STEP 2: upload ONLY if Netlify requires this SHA
+        required_files = deploy_json.get("required", [])
 
-        # Upload file to Netlify
-        upload_res = requests.put(
-            f"https://api.netlify.com/api/v1/deploys/{deploy_id}/files/index.html",
-            headers={
-                "Authorization": f"Bearer {NETLIFY_TOKEN}",
-                "Content-Type": "text/html",
-            },
-            data=main_html.encode(),
-            timeout=30
-        )
-        upload_res.raise_for_status()
-        print("✅ FILE UPLOADED: /index.html")
+        if html_sha in required_files:
+            # File not on CDN yet â€” upload it
+            upload_res = requests.put(
+                f"https://api.netlify.com/api/v1/deploys/{deploy_id}/files/index.html",
+                headers={
+                    "Authorization": f"Bearer {NETLIFY_TOKEN}",
+                    "Content-Type": "application/octet-stream",
+                },
+                data=html_bytes,
+                timeout=30
+            )
+            print("ðŸ“¤ Upload response:", upload_res.status_code, upload_res.text)
+            upload_res.raise_for_status()
+        else:
+            # âœ… File already exists on Netlify CDN â€” skip upload to avoid 422
+            print("âœ… Netlify already has this exact SHA, skipping upload")
 
-        # Production polling loop - wait for deploy ready
-        final_url = None
-        for _ in range(20):
-            deploy_check = requests.get(
+        # âœ… STEP 3: wait until ready
+        final_url = deploy_json.get("deploy_ssl_url") or NETLIFY_SITE_URL
+
+        for _ in range(15):
+            check = requests.get(
                 f"https://api.netlify.com/api/v1/deploys/{deploy_id}",
                 headers={"Authorization": f"Bearer {NETLIFY_TOKEN}"},
                 timeout=30
             )
-            deploy_data = deploy_check.json()
+            deploy_data = check.json()
             state = deploy_data.get("state")
-            print("🔄 DEPLOY STATE:", state)
+            print("ðŸ”„ DEPLOY STATE:", state)
 
             if state == "ready":
-                final_url = deploy_data.get("ssl_url") or deploy_data.get("deploy_ssl_url")
+                final_url = deploy_data.get("deploy_ssl_url") or deploy_data.get("ssl_url") or NETLIFY_SITE_URL
                 break
 
             time.sleep(2)
 
-        # Fallback URL if polling didn't complete
-        if not final_url:
-            final_url = site.get("ssl_url") or site.get("url")
-
-        print("🚀 FINAL SITE URL:", final_url)
-
         return {
             "success": True,
-            "url": final_url,
-            "site_id": site_id,
+            "url": final_url or NETLIFY_SITE_URL,
             "deploy_id": deploy_id,
+            "site_id": NETLIFY_SITE_ID,
         }
 
-    except requests.RequestException as e:
-        print("❌ Netlify API error:", str(e))
-        return {"success": False, "error": f"Netlify API error: {str(e)}"}
     except Exception as e:
-        print("❌ Deploy error:", str(e))
+        print("âŒ Deploy error:", str(e))
         return {"success": False, "error": str(e)}
 
 
 # -------------------------------
-# ✅ RUN SERVER
+# âœ… RUN SERVER
 # -------------------------------
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
+app.include_router(deploy_router)
+
+

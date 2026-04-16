@@ -1,0 +1,10 @@
+{
+  "files": {
+    "src/app/page.tsx": "\n\"use client\";\n\nimport WebsiteRenderer from \"@/components/renderer/WebsiteRenderer\";\n\nexport default function HomePage() {\n  const schema = {\n  \"pages\": []\n}\n  return (\n    <div className=\"min-h-screen bg-black\">\n      <WebsiteRenderer schema={schema} />\n    </div>\n  );\n}\n",
+    "package.json": "{\n  \"name\": \"\",\n  \"private\": true,\n  \"scripts\": {\n    \"dev\": \"next dev\",\n    \"build\": \"next build\",\n    \"start\": \"next start\"\n  },\n  \"dependencies\": {\n    \"next\": \"14.1.0\",\n    \"react\": \"18.2.0\",\n    \"react-dom\": \"18.2.0\"\n  }\n}",
+    "next.config.js": "\n/** @type {import('next').NextConfig} */\nconst nextConfig = {};\nmodule.exports = nextConfig;\n",
+    "src/components/renderer/WebsiteRenderer.tsx": "\nexport default function WebsiteRenderer({ schema }: any) {\n  return (\n    <div style={{ padding: \"40px\", color: \"white\", background: \"black\", minHeight: \"100vh\" }}>\n      <pre>{JSON.stringify(schema, null, 2)}</pre>\n    </div>\n  );\n}\n"
+  },
+  "projectName": "",
+  "platform": "netlify"
+}
