@@ -375,7 +375,14 @@ async def generate(req: GenerateRequest):
     image = generate_freepik_image(prompt)
     
     # Select template from 40 options
-    template_id = choose_template_from_prompt(prompt)
+   # Select template
+template_id = choose_template_from_prompt(prompt)
+
+VALID_TEMPLATES = ["template1", "template2", "template3"]
+
+if template_id not in VALID_TEMPLATES:
+    print(f"⚠️ Invalid template '{template_id}' → fallback to template1")
+    template_id = "template1"
     
     # Build simple, template-ready schema
     schema = {
