@@ -721,12 +721,29 @@ async def deploy(data: dict):
             yield "PROGRESS:60\n"
             yield "📦 Packaging for Netlify...\n"
 
+            # Netlify _headers — forces correct Content-Type so HTML renders
+            # instead of being served as text/plain
+            netlify_headers = """\
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+
+/index.html
+  Content-Type: text/html; charset=UTF-8
+  Cache-Control: no-cache
+"""
+
+            # Netlify _redirects — catch-all so page reloads don't 404
+            netlify_redirects = "/*  /index.html  200\n"
+
             zip_buffer = _io.BytesIO()
             with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
                 zf.writestr("index.html", index_html)
+                zf.writestr("_headers", netlify_headers)
+                zf.writestr("_redirects", netlify_redirects)
                 # Write any extra files (CSS, JS) the frontend may have sent
                 for fname, fcontent in files.items():
-                    if fname != "index.html":
+                    if fname not in ("index.html", "_headers", "_redirects"):
                         zf.writestr(fname, fcontent)
             zip_buffer.seek(0)
             yield "✅ ZIP packaged\n"
