@@ -570,25 +570,28 @@ async def preview_style(mode: str):
     }
 
 
-# -------------------------------
-# ✅ SAVE / LOAD PROJECT
-# -------------------------------
+# Absolute path anchored to this file's directory — works on any server
+PROJECTS_DIR = Path(__file__).parent / "projects"
+PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
+
+
 @app.post("/save")
 async def save_project(data: dict):
     project_id = str(uuid.uuid4())
-    os.makedirs("projects", exist_ok=True)
-    with open(f"projects/{project_id}.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    project_file = PROJECTS_DIR / f"{project_id}.json"
+    project_file.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False),
+        encoding="utf-8"
+    )
     return {"success": True, "project_id": project_id}
 
 
 @app.get("/project/{project_id}")
 def load_project(project_id: str):
-    path = f"projects/{project_id}.json"
-    if not os.path.exists(path):
+    project_file = PROJECTS_DIR / f"{project_id}.json"
+    if not project_file.exists():
         return {"success": False, "error": "Project not found"}
-    with open(path, "r", encoding="utf-8") as f:
-        return {"success": True, "data": json.load(f)}
+    return {"success": True, "data": json.loads(project_file.read_text(encoding="utf-8"))}
 
 
 # -------------------------------
