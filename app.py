@@ -618,20 +618,24 @@ def load_project(project_id: str):
 # ✅ ZIP DOWNLOAD ENDPOINT
 # -------------------------------
 # -------------------------------
-# ✅ STREAMING DEPLOY ENDPOINT
+# ✅ STREAMING DEPLOY ENDPOINT (Cloud Run compatible)
+# No filesystem template reads, no npm/Node.js dependency
+# Accepts rendered HTML from frontend → ZIPs → deploys to Netlify
 # -------------------------------
 @app.post("/deploy")
 async def deploy(data: dict):
     import asyncio
+    import io as _io
 
-    files = data.get("files", {})
+    files        = data.get("files", {})          # {"index.html": "...", ...}
     project_name = data.get("projectName", "clyraweb-project")
-    template_name = data.get("templateName")
+    editable_data = data.get("editableData", {})
+    theme         = data.get("theme", {})
 
     async def generate():
         yield "STEP:START\n"
-        yield "PROGRESS:5\n"
-        yield "🚀 Preparing build environment...\n"
+        yield "PROGRESS:10\n"
+        yield "🚀 Preparing deployment...\n"
 
         if not NETLIFY_TOKEN:
             yield "ERROR:NETLIFY_TOKEN missing in environment\n"
@@ -641,224 +645,118 @@ async def deploy(data: dict):
             return
 
         try:
-            import tempfile, zipfile, io as _io
+            # ── Build static HTML ─────────────────────────────────────
+            yield "STEP:BUILD\n"
+            yield "PROGRESS:35\n"
+            yield "🏗️ Generating static HTML...\n"
 
-            with tempfile.TemporaryDirectory() as temp_dir:
-                temp_path = Path(temp_dir)
+            # Use index.html from files dict if provided by frontend
+            if files and "index.html" in files:
+                index_html = files["index.html"]
+                yield "✅ Using frontend-provided HTML\n"
+            else:
+                # Generate a minimal HTML shell from editable_data
+                title       = editable_data.get("hero", {}).get("title", project_name)
+                subtitle    = editable_data.get("hero", {}).get("subtitle", "")
+                bg_color    = theme.get("backgroundColor", "#0f172a")
+                text_color  = theme.get("textColor", "#ffffff")
+                primary     = theme.get("primaryColor", "#6366f1")
 
-                # ── Template mode ─────────────────────────────────────
-                if template_name:
-                    template_src = (
-                        Path(__file__).parent.parent
-                        / "frontend" / "src" / "templates"
-                        / f"{template_name}.tsx"
-                    )
-                    if not template_src.exists():
-                        yield f"ERROR:Template not found: {template_name}\n"
-                        return
-
-                    real_template_code = template_src.read_text(encoding="utf-8")
-                    template_dest = (
-                        temp_path / "src" / "templates" / f"{template_name}.tsx"
-                    )
-                    template_dest.parent.mkdir(parents=True, exist_ok=True)
-                    template_dest.write_text(real_template_code, encoding="utf-8")
-                    yield f"✅ Copied real template: {template_name}\n"
-
-                    # App router
-                    app_dir = temp_path / "src" / "app"
-                    app_dir.mkdir(parents=True, exist_ok=True)
-
-                    editable_data = data.get("editableData", {})
-                    editable_data_json = json.dumps(editable_data)
-                    (app_dir / "page.tsx").write_text(
-                        f'import TemplatePage from "../templates/{template_name}";\n\n'
-                        f'export default function Home() {{\n'
-                        f'  return <TemplatePage editableData={{{editable_data_json}}} isPublished={{true}} />;\n'
-                        f'}}\n',
-                        encoding="utf-8"
-                    )
-                    (app_dir / "layout.tsx").write_text(
-                        'export default function RootLayout({ children }: { children: React.ReactNode }) {\n'
-                        '  return (\n'
-                        '    <html lang="en">\n'
-                        '      <head><script src="https://cdn.tailwindcss.com"></script></head>\n'
-                        '      <body>{children}</body>\n'
-                        '    </html>\n'
-                        '  )\n'
-                        '}\n',
-                        encoding="utf-8"
-                    )
-                else:
-                    for file_path, content in files.items():
-                        full_path = temp_path / file_path
-                        full_path.parent.mkdir(parents=True, exist_ok=True)
-                        full_path.write_text(content, encoding="utf-8")
-
-                # ── package.json ──────────────────────────────────────
-                pkg_json = {
-                    "name": project_name.lower().replace(" ", "-"),
-                    "version": "1.0.0", "private": True,
-                    "scripts": {"dev": "next dev", "build": "next build", "start": "next start", "lint": "next lint"},
-                    "dependencies": {
-                        "next": "14.2.3", "react": "18.2.0", "react-dom": "18.2.0",
-                        "lucide-react": "^0.542.0", "zustand": "^5.0.0"
-                    },
-                    "devDependencies": {
-                        "@types/node": "^20.0.0", "@types/react": "^18.2.0",
-                        "@types/react-dom": "^18.2.0", "typescript": "^5.0.0"
-                    }
-                }
-                (temp_path / "package.json").write_text(json.dumps(pkg_json, indent=2), encoding="utf-8")
-
-                # ── next.config.js ────────────────────────────────────
-                (temp_path / "next.config.js").write_text(
-                    '/** @type {import("next").NextConfig} */\n'
-                    'const nextConfig = { output: "export", images: { unoptimized: true }, trailingSlash: true }\n'
-                    'module.exports = nextConfig\n',
-                    encoding="utf-8"
+                nav_links   = editable_data.get("navbar", {}).get("links", [])
+                nav_html    = "".join(
+                    f'<a href="#" style="color:{primary};margin:0 12px;text-decoration:none;">'
+                    f'{link.get("label","") if isinstance(link, dict) else link}</a>'
+                    for link in nav_links
                 )
 
-                # ── Fallback stores ───────────────────────────────────
-                store_dir = temp_path / "src" / "store"
-                store_dir.mkdir(parents=True, exist_ok=True)
+                footer_text = editable_data.get("footer", {}).get("copyright", f"© 2026 {project_name}")
 
-                theme_data = data.get("theme", {
-                    "backgroundColor": "#ffffff", "textColor": "#000000",
-                    "primaryColor": "#000000", "secondaryColor": "#f5f5f5",
-                    "accentColor": "#333333", "fontFamily": "Inter, sans-serif",
-                    "borderRadius": 8, "sectionSpacing": 80,
-                })
-                (store_dir / "useThemeStore.ts").write_text(
-                    f'export const useThemeStore = () => ({{ theme: {json.dumps(theme_data)}, setTheme: () => {{}} }});\n',
-                    encoding="utf-8"
-                )
-                (store_dir / "useWebsiteBuilderStore.ts").write_text(
-                    'const store = { pages: [], currentPage: "home", regions: {}, '
-                    'updatePage: () => {}, setCurrentPage: () => {}, updateRegion: () => {} };\n'
-                    'export const useWebsiteBuilderStore = (selector?: any) => selector ? selector(store) : store;\n'
-                    'export const useRegionValue = (key: string) => (store.regions as any)?.[key] ?? null;\n',
-                    encoding="utf-8"
-                )
+                index_html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <style>
+    *{{box-sizing:border-box;margin:0;padding:0}}
+    body{{font-family:Inter,sans-serif;background:{bg_color};color:{text_color};min-height:100vh}}
+    nav{{display:flex;justify-content:space-between;align-items:center;padding:20px 40px;
+         background:rgba(255,255,255,0.05);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.1)}}
+    .brand{{font-size:1.4rem;font-weight:700;color:{primary}}}
+    .hero{{display:flex;flex-direction:column;align-items:center;justify-content:center;
+           padding:120px 40px;text-align:center;min-height:70vh}}
+    h1{{font-size:clamp(2rem,5vw,4rem);font-weight:800;margin-bottom:24px;
+        background:linear-gradient(135deg,{primary},{text_color});
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent}}
+    p{{font-size:1.2rem;opacity:0.7;max-width:600px;line-height:1.6}}
+    .cta{{margin-top:40px;padding:16px 40px;background:{primary};color:#fff;
+          border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;
+          text-decoration:none;display:inline-block}}
+    footer{{text-align:center;padding:40px;opacity:0.5;font-size:0.85rem;
+            border-top:1px solid rgba(255,255,255,0.1)}}
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="brand">{project_name}</span>
+    <div>{nav_html}</div>
+  </nav>
+  <section class="hero">
+    <h1>{title}</h1>
+    <p>{subtitle}</p>
+    <a href="#" class="cta">Get Started</a>
+  </section>
+  <footer>{footer_text}</footer>
+</body>
+</html>"""
+                yield "✅ HTML generated from template data\n"
 
-                # ── tsconfig + next-env ───────────────────────────────
-                (temp_path / "tsconfig.json").write_text(
-                    '{"compilerOptions":{"target":"ES2017","lib":["dom","dom.iterable","esnext"],'
-                    '"allowJs":true,"skipLibCheck":true,"strict":true,"noEmit":true,'
-                    '"esModuleInterop":true,"module":"esnext","moduleResolution":"bundler",'
-                    '"resolveJsonModule":true,"isolatedModules":true,"jsx":"preserve",'
-                    '"incremental":true,"plugins":[{"name":"next"}],"paths":{"@/*":["./src/*"]}},'
-                    '"include":["next-env.d.ts","**/*.ts","**/*.tsx",".next/types/**/*.ts"],'
-                    '"exclude":["node_modules"]}\n',
-                    encoding="utf-8"
-                )
-                (temp_path / "next-env.d.ts").write_text(
-                    '/// <reference types="next" />\n/// <reference types="next/image-types/global" />\n',
-                    encoding="utf-8"
-                )
+            # ── Package as ZIP ────────────────────────────────────────
+            yield "PROGRESS:60\n"
+            yield "📦 Packaging for Netlify...\n"
 
-                # ── Log build files ───────────────────────────────────
-                yield "🚀 BUILD FILES:\n"
-                for root, dirs, files_list in os.walk(temp_path):
-                    for file in files_list:
-                        rel_path = Path(root).relative_to(temp_path) / file
-                        yield f"  📄 {rel_path}\n"
+            zip_buffer = _io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+                zf.writestr("index.html", index_html)
+                # Write any extra files (CSS, JS) the frontend may have sent
+                for fname, fcontent in files.items():
+                    if fname != "index.html":
+                        zf.writestr(fname, fcontent)
+            zip_buffer.seek(0)
+            yield "✅ ZIP packaged\n"
 
-                # ── npm install ───────────────────────────────────────
-                yield "STEP:INSTALL\n"
-                yield "PROGRESS:20\n"
-                yield "📦 Installing dependencies...\n"
+            # ── Deploy to Netlify ─────────────────────────────────────
+            yield "STEP:DEPLOY\n"
+            yield "PROGRESS:80\n"
+            yield "📤 Uploading to Netlify...\n"
 
-                try:
-                    result = await asyncio.to_thread(
-                        subprocess.run,
-                        ["npm", "install"],
-                        cwd=temp_path, capture_output=True, text=True
-                    )
-                    if result.returncode != 0:
-                        yield f"ERROR:npm install failed:\n{result.stderr}\n"
-                        return
-                    yield "✅ Dependencies installed\n"
-                except Exception as e:
-                    yield f"ERROR:Install failed: {e}\n"
-                    return
+            deploy_api_url = f"https://api.netlify.com/api/v1/sites/{NETLIFY_SITE_ID}/deploys"
+            deploy_res = await asyncio.to_thread(
+                requests.post,
+                deploy_api_url,
+                headers={
+                    "Authorization": f"Bearer {NETLIFY_TOKEN}",
+                    "Content-Type": "application/zip",
+                },
+                data=zip_buffer.read(),
+                timeout=180,
+            )
 
-                # ── next build ────────────────────────────────────────
-                yield "STEP:BUILD\n"
-                yield "PROGRESS:45\n"
-                yield "🏗️ Building Next.js project...\n"
+            if deploy_res.status_code not in [200, 201]:
+                yield f"ERROR:Netlify API {deploy_res.status_code}: {deploy_res.text[:300]}\n"
+                return
 
-                try:
-                    result = await asyncio.to_thread(
-                        subprocess.run,
-                        ["npx", "next", "build"],
-                        cwd=temp_path, capture_output=True, text=True
-                    )
-                    # Stream build output line by line
-                    for line in (result.stdout or "").splitlines():
-                        if line.strip():
-                            yield f"  {line}\n"
-                            await asyncio.sleep(0.01)
-                    if result.returncode != 0:
-                        yield f"ERROR:Build failed:\n{result.stderr}\n"
-                        return
-                    yield "✅ Build successful\n"
-                except Exception as e:
-                    yield f"ERROR:Build failed: {e}\n"
-                    return
+            deploy_json = deploy_res.json()
+            live_url = (
+                deploy_json.get("ssl_url")
+                or deploy_json.get("deploy_ssl_url")
+                or NETLIFY_SITE_URL
+            )
 
-                yield "PROGRESS:75\n"
-
-                # ── Zip output ────────────────────────────────────────
-                out_dir = temp_path / "out"
-                if not out_dir.exists():
-                    yield "ERROR:Build failed: 'out' directory not found\n"
-                    return
-
-                zip_buffer = _io.BytesIO()
-                with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
-                    for file in out_dir.rglob("*"):
-                        if file.is_file():
-                            zf.write(file, file.relative_to(out_dir))
-                zip_buffer.seek(0)
-                yield f"📦 Zipped build for Netlify\n"
-
-                # ── Deploy to Netlify ─────────────────────────────────
-                yield "STEP:DEPLOY\n"
-                yield "PROGRESS:85\n"
-                yield f"📤 Deploying to Netlify...\n"
-
-                try:
-                    deploy_api_url = f"https://api.netlify.com/api/v1/sites/{NETLIFY_SITE_ID}/deploys"
-                    deploy_res = await asyncio.to_thread(
-                        requests.post,
-                        deploy_api_url,
-                        headers={
-                            "Authorization": f"Bearer {NETLIFY_TOKEN}",
-                            "Content-Type": "application/zip",
-                        },
-                        data=zip_buffer.read(),
-                        timeout=180,
-                    )
-                except Exception as e:
-                    yield f"ERROR:Netlify request failed: {e}\n"
-                    return
-
-                if deploy_res.status_code not in [200, 201]:
-                    yield f"ERROR:Netlify API {deploy_res.status_code}: {deploy_res.text}\n"
-                    return
-
-                deploy_json = deploy_res.json()
-                live_url = (
-                    deploy_json.get("ssl_url")
-                    or deploy_json.get("deploy_ssl_url")
-                    or NETLIFY_SITE_URL
-                )
-
-                yield "STEP:DONE\n"
-                yield "PROGRESS:100\n"
-                yield f"✅ Deploy successful!\n"
-                yield f"URL:{live_url}\n"
+            yield "STEP:DONE\n"
+            yield "PROGRESS:100\n"
+            yield "✅ Deploy successful!\n"
+            yield f"URL:{live_url}\n"
 
         except Exception as e:
             import traceback
@@ -866,7 +764,6 @@ async def deploy(data: dict):
             yield f"ERROR:{type(e).__name__}: {str(e)}\n"
 
     return StreamingResponse(generate(), media_type="text/plain")
-
 
 # -------------------------------
 # ✅ RUN SERVER
