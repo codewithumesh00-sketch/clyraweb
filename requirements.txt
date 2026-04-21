@@ -5,3 +5,5 @@ requests
 jinja2
 python-multipart
 google-generativeai
+google-cloud-firestore
+groq

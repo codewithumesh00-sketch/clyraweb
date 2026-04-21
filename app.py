@@ -19,10 +19,17 @@ from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-# ✅ STEP 1: ADD FIRESTORE IMPORT
-from google.cloud import firestore
-
 from agent import generate_ui_json, generate_seo_blog
+
+# ✅ Firestore — optional, only used on Cloud Run
+try:
+    from google.cloud import firestore
+    db = firestore.Client()
+    USE_FIRESTORE = True
+except Exception:
+    db = None
+    USE_FIRESTORE = False
+    print("⚠️  Firestore unavailable — using local JSON fallback")
 
 
 # ✅ FIX 3: FORCE ENV PATH LOAD - Explicit .env path
@@ -31,9 +38,6 @@ load_dotenv(dotenv_path=env_path)
 
 app = FastAPI(title="clyraweb AI Backend 🚀")
 active_connections: list[WebSocket] = []
-
-# ✅ STEP 2: INITIALIZE FIRESTORE CLIENT
-db = firestore.Client()
 
 # ✅ ENV VARS
 NETLIFY_TOKEN = os.getenv("NETLIFY_TOKEN")
@@ -576,32 +580,35 @@ async def preview_style(mode: str):
     }
 
 
-# ✅ STEP 3: ❌ REMOVED PROJECTS_DIR LOCAL STORAGE CODE
-# (Deleted these lines completely)
-# PROJECTS_DIR = Path(__file__).parent / "projects"
-# PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
+# ── Project storage: Firestore on Cloud Run, JSON files locally ──
+PROJECTS_DIR = Path(__file__).parent / "projects"
+PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# ✅ STEP 4: REPLACE /save ENDPOINT — FIRESTORE VERSION
 @app.post("/save")
 async def save_project(data: dict):
     project_id = str(uuid.uuid4())
-    
-    # Save to Firestore "projects" collection
-    db.collection("projects").document(project_id).set(data)
-    
+    if USE_FIRESTORE and db:
+        db.collection("projects").document(project_id).set(data)
+    else:
+        (PROJECTS_DIR / f"{project_id}.json").write_text(
+            json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
     return {"success": True, "project_id": project_id}
 
 
-# ✅ STEP 5: REPLACE /project/{id} ENDPOINT — FIRESTORE VERSION
 @app.get("/project/{project_id}")
 def load_project(project_id: str):
-    doc = db.collection("projects").document(project_id).get()
-    
-    if not doc.exists:
-        return {"success": False, "error": "Project not found"}
-    
-    return {"success": True, "data": doc.to_dict()}
+    if USE_FIRESTORE and db:
+        doc = db.collection("projects").document(project_id).get()
+        if not doc.exists:
+            return {"success": False, "error": "Project not found"}
+        return {"success": True, "data": doc.to_dict()}
+    else:
+        project_file = PROJECTS_DIR / f"{project_id}.json"
+        if not project_file.exists():
+            return {"success": False, "error": "Project not found"}
+        return {"success": True, "data": json.loads(project_file.read_text(encoding="utf-8"))}
 
 
 # -------------------------------
@@ -611,7 +618,7 @@ def load_project(project_id: str):
 # ✅ STREAMING DEPLOY ENDPOINT
 # -------------------------------
 @app.post("/deploy")
-async def deploy( dict):
+async def deploy(data: dict):
     import asyncio
 
     files = data.get("files", {})
