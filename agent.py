@@ -18,8 +18,8 @@ load_dotenv()
 # -------------------------------
 API_KEY = os.getenv("GROQ_API_KEY")
 if not API_KEY:
-    raise RuntimeError("GROQ_API_KEY is missing in environment")
-
+    print("⚠️ GROQ_API_KEY missing — using fallback mode")
+    
 FREEPIK_API_KEY = os.getenv("FREEPIK_API_KEY", "FPSX0115d227c7c2172201992815a0b65a17")
 
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
