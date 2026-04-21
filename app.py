@@ -656,20 +656,26 @@ async def deploy(data: dict):
                 yield "✅ Using frontend-provided HTML\n"
             else:
                 # Generate a minimal HTML shell from editable_data
-                title       = editable_data.get("hero", {}).get("title", project_name)
-                subtitle    = editable_data.get("hero", {}).get("subtitle", "")
+                # AI returns heading/subheading; templates use title/subtitle — handle both
+                hero        = editable_data.get("hero", {})
+                nav_data    = editable_data.get("navbar", editable_data.get("navigation", {}))
+                brand_name  = nav_data.get("brand") or nav_data.get("logoText") or project_name
+
+                title       = (hero.get("title") or hero.get("heading") or project_name).strip()
+                subtitle    = (hero.get("subtitle") or hero.get("subheading") or "").strip()
                 bg_color    = theme.get("backgroundColor", "#0f172a")
                 text_color  = theme.get("textColor", "#ffffff")
                 primary     = theme.get("primaryColor", "#6366f1")
 
-                nav_links   = editable_data.get("navbar", {}).get("links", [])
+                nav_links   = nav_data.get("links", [])
                 nav_html    = "".join(
                     f'<a href="#" style="color:{primary};margin:0 12px;text-decoration:none;">'
-                    f'{link.get("label","") if isinstance(link, dict) else link}</a>'
+                    f'{link.get("label","") if isinstance(link, dict) else str(link)}</a>'
                     for link in nav_links
                 )
 
-                footer_text = editable_data.get("footer", {}).get("copyright", f"© 2026 {project_name}")
+                footer_data = editable_data.get("footer", {})
+                footer_text = (footer_data.get("copyright") or footer_data.get("text") or f"© 2026 {brand_name}").strip()
 
                 index_html = f"""<!DOCTYPE html>
 <html lang="en">
