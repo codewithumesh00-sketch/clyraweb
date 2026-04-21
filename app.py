@@ -1,3 +1,4 @@
+print("🚀 BACKEND STARTING...")
 from deploy_router import router as deploy_router
 import zipfile
 import tempfile
@@ -24,7 +25,13 @@ from agent import generate_ui_json, generate_seo_blog
 # ✅ Firestore — optional, only used on Cloud Run
 try:
     from google.cloud import firestore
+    try:
+    from google.cloud import firestore
     db = firestore.Client()
+    print("✅ Firestore initialized")
+except Exception as e:
+    print("🔥 Firestore init failed:", e)
+    db = None
     USE_FIRESTORE = True
 except Exception:
     db = None
