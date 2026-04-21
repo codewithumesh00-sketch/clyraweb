@@ -1,5 +1,4 @@
 print("🚀 BACKEND STARTING...")
-from deploy_router import router as deploy_router
 import zipfile
 import tempfile
 import subprocess
@@ -23,20 +22,17 @@ from fastapi.responses import StreamingResponse
 from agent import generate_ui_json, generate_seo_blog
 
 # ✅ Firestore — optional, only used on Cloud Run
+USE_FIRESTORE = False
+db = None
 try:
     from google.cloud import firestore
-    try:
-    from google.cloud import firestore
     db = firestore.Client()
+    USE_FIRESTORE = True
     print("✅ Firestore initialized")
 except Exception as e:
-    print("🔥 Firestore init failed:", e)
-    db = None
-    USE_FIRESTORE = True
-except Exception:
     db = None
     USE_FIRESTORE = False
-    print("⚠️  Firestore unavailable — using local JSON fallback")
+    print("⚠️  Firestore unavailable — using local JSON fallback:", e)
 
 
 # ✅ FIX 3: FORCE ENV PATH LOAD - Explicit .env path
@@ -776,8 +772,8 @@ async def deploy(data: dict):
                 try:
                     result = await asyncio.to_thread(
                         subprocess.run,
-                        ["npm.cmd", "install"],
-                        cwd=temp_path, capture_output=True, text=True, shell=True
+                        ["npm", "install"],
+                        cwd=temp_path, capture_output=True, text=True
                     )
                     if result.returncode != 0:
                         yield f"ERROR:npm install failed:\n{result.stderr}\n"
@@ -795,8 +791,8 @@ async def deploy(data: dict):
                 try:
                     result = await asyncio.to_thread(
                         subprocess.run,
-                        ["npx.cmd", "next", "build"],
-                        cwd=temp_path, capture_output=True, text=True, shell=True
+                        ["npx", "next", "build"],
+                        cwd=temp_path, capture_output=True, text=True
                     )
                     # Stream build output line by line
                     for line in (result.stdout or "").splitlines():
@@ -877,4 +873,5 @@ async def deploy(data: dict):
 # -------------------------------
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
+    port = int(os.getenv("PORT", 8080))
+    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=False, log_level="info")

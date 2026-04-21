@@ -1,9 +1,31 @@
-clyrawebui-frontend
-projects
-__pycache__
+# Python
+__pycache__/
 *.pyc
-*.log
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+venv/
+
+# Secrets
 .env
-.git
-node_modules
+*.env
+
+# Dev artifacts
+.git/
+.gitignore
+*.log
+cache/
 cache.json
+
+# Node (backend shouldn't have these, but guard anyway)
+node_modules/
+package-lock.json
+package.json
+
+# Local project storage (not needed in image)
+projects/
+
+# IDE
+*.code-workspace
+.vscode/
